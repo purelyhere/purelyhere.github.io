@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>pure</title>
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="pure">
+<meta property="og:description" content="hi im 99% pure">
+<meta property="og:url" content="https://pure.wyvern.im/">
+
+
+<meta property="og:image" content="https://raw.githubusercontent.com/purelyhere/purelyhere.github.io/refs/heads/main/heart-plus.svg">
+
+
+<meta name="theme-color" content="#ff5ca8">
+
+<title>.</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -12,8 +24,8 @@
 <style>
 
 :root {
-  --c1: 255,70,170;
-  --c2: 255,130,220;
+  --c1: 255,105,180;
+  --c2: 255,60,140;
 }
 
 *, *::before, *::after {
@@ -87,7 +99,7 @@ canvas {
 
   border-radius: 22px;
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
 
   background:
     linear-gradient(
@@ -102,7 +114,6 @@ canvas {
 
   box-shadow:
     0 0 50px rgba(0,0,0,0.35),
-    0 0 100px rgba(var(--c1),0.08),
     inset 0 1px 0 rgba(255,255,255,0.03);
 
   overflow: hidden;
@@ -133,28 +144,14 @@ canvas {
   pointer-events: none;
 }
 
-.card::after {
-  content: '';
-
-  position: absolute;
-  inset: 0;
-
-  border-radius: 22px;
-
-  border: 1px solid rgba(var(--c1),0.15);
-
-  box-shadow:
-    0 0 40px rgba(var(--c1),0.12);
-
-  pointer-events: none;
-}
-
 @keyframes cardReveal {
   from {
     opacity: 0;
+    transform: translateY(20px) scale(0.98);
   }
   to {
     opacity: 1;
+    transform: translateY(0px) scale(1);
   }
 }
 
@@ -247,7 +244,7 @@ canvas {
   font-size: 17px;
   font-weight: 700;
 
-  color: #e3d7df;
+  color: #c4c4c0;
 
   letter-spacing: 0.03em;
 
@@ -258,20 +255,13 @@ canvas {
     textIn 1s ease forwards;
 
   animation-delay: 0.8s;
-
-  transition:
-    letter-spacing 0.3s ease;
-}
-
-.username:hover {
-  letter-spacing: 0.08em;
 }
 
 .handle {
   font-size: 13px;
   font-weight: 300;
 
-  color: #9b8190;
+  color: #666;
 
   opacity: 0;
   transform: translateY(5px);
@@ -311,7 +301,7 @@ canvas {
 
   fill: none;
 
-  stroke: #694858;
+  stroke: #3a3a3a;
   stroke-width: 1.5;
 
   opacity: 0.7;
@@ -335,35 +325,32 @@ canvas {
 
 /* ───────────────── CONFIG ───────────────── */
 
-/* avatar */
 const DISCORD_AVATAR_URL =
 'https://cdn.discordapp.com/avatars/385861858495692801/5b96fcf74db28116bd40caaa1549b8dd.png?size=512';
 
-/* profile */
 const USERNAME = 'pure';
+
 const HANDLE = '/purelyawake';
 
-/* audio */
 const AUDIO_URL =
 'https://raw.githubusercontent.com/purelyhere/purelyhere.github.io/main/GoodLuckBabe.mp3';
 
-/* volume 0 → 1 */
+/* 0.0 -> 1.0 */
 const AUDIO_VOLUME = 0.15;
 
-/* title lines */
+/* LOCKED pink palette */
+const FORCE_PINK_THEME = true;
+
+/* rotating title lines */
 const TITLE_LINES = [
   'pure',
   'purelyawake',
-  'good luck babe',
-  'pink skies',
-  'dreaming',
-  'online',
-  'why are you still here?'
+  'how did you find me?',
+  'we all go at some point',
+  'music is amazing',
+  'lost somewhere',
+  'hi there!'
 ];
-
-const TYPE_SPEED = 100;
-const DELETE_SPEED = 45;
-const TITLE_PAUSE = 2000;
 
 </script>
 
@@ -421,25 +408,97 @@ document.getElementById('handle').textContent = HANDLE;
 const avatarLink = document.getElementById('avatar-link');
 const fallbackEl = document.getElementById('fallback');
 
-const palette = {
-  c1: { r:255, g:70,  b:170 },
-  c2: { r:255, g:130, b:220 }
+let palette = {
+  c1: { r:255, g:105, b:180 },
+  c2: { r:255, g:60, b:140 }
 };
 
-avatarLink.href = DISCORD_AVATAR_URL;
+document.documentElement.style.setProperty(
+  '--c1',
+  `${palette.c1.r}, ${palette.c1.g}, ${palette.c1.b}`
+);
 
-const img = new Image();
+document.documentElement.style.setProperty(
+  '--c2',
+  `${palette.c2.r}, ${palette.c2.g}, ${palette.c2.b}`
+);
 
-img.crossOrigin = 'anonymous';
+/* ───────────────── Avatar ───────────────── */
 
-img.onload = () => {
+if (DISCORD_AVATAR_URL) {
 
-  fallbackEl.remove();
+  avatarLink.href = DISCORD_AVATAR_URL;
 
-  avatarLink.appendChild(img);
-};
+  const img = new Image();
 
-img.src = DISCORD_AVATAR_URL;
+  img.crossOrigin = 'anonymous';
+
+  img.onload = () => {
+
+    fallbackEl.remove();
+
+    avatarLink.appendChild(img);
+
+  };
+
+  img.src = DISCORD_AVATAR_URL;
+}
+
+/* ───────────────── Dynamic Title ───────────────── */
+
+let titleIndex = 0;
+let charIndex = 0;
+let deleting = false;
+
+async function titleLoop() {
+
+  const current = TITLE_LINES[titleIndex];
+
+  if (!deleting) {
+
+    charIndex++;
+
+    document.title =
+      current.substring(0, charIndex) + '.';
+
+    if (charIndex >= current.length) {
+
+      deleting = true;
+
+      await wait(2200);
+    }
+
+  } else {
+
+    charIndex--;
+
+    if (charIndex <= 0) {
+
+      document.title = '.';
+
+      deleting = false;
+
+      titleIndex =
+        Math.floor(Math.random() * TITLE_LINES.length);
+
+    } else {
+
+      document.title =
+        current.substring(0, charIndex) + '.';
+    }
+  }
+
+  setTimeout(
+    titleLoop,
+    deleting ? 55 : 110
+  );
+}
+
+function wait(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+titleLoop();
 
 /* ───────────────── Mouse Parallax ───────────────── */
 
@@ -461,7 +520,6 @@ function parallaxLoop() {
     translate3d(${mx * 10}px, ${my * 10}px, 0)
     rotateX(${my * -5}deg)
     rotateY(${mx * 5}deg)
-    scale(1)
   `;
 
   requestAnimationFrame(parallaxLoop);
@@ -484,12 +542,11 @@ window.addEventListener('click', async () => {
 
   audio.crossOrigin = 'anonymous';
   audio.loop = true;
+
   audio.volume = AUDIO_VOLUME;
 
   const ctxAudio =
     new (window.AudioContext || window.webkitAudioContext)();
-
-  await ctxAudio.resume();
 
   const src =
     ctxAudio.createMediaElementSource(audio);
@@ -507,62 +564,7 @@ window.addEventListener('click', async () => {
   await audio.play();
 
   audioReady = true;
-
-}, { once:true });
-
-/* ───────────────── Title Typewriter ───────────────── */
-
-let charIndex = 0;
-let deleting = false;
-
-function randomLine() {
-
-  return TITLE_LINES[
-    Math.floor(Math.random() * TITLE_LINES.length)
-  ];
-}
-
-let currentLine = randomLine();
-
-function typeTitle() {
-
-  if (!deleting) {
-
-    document.title =
-      currentLine.slice(0, charIndex++);
-
-    if (charIndex > currentLine.length) {
-
-      deleting = true;
-
-      setTimeout(typeTitle, TITLE_PAUSE);
-
-      return;
-    }
-
-    setTimeout(typeTitle, TYPE_SPEED);
-
-  } else {
-
-    document.title =
-      currentLine.slice(0, charIndex--);
-
-    if (charIndex < 0) {
-
-      deleting = false;
-
-      currentLine = randomLine();
-
-      setTimeout(typeTitle, 350);
-
-      return;
-    }
-
-    setTimeout(typeTitle, DELETE_SPEED);
-  }
-}
-
-typeTitle();
+});
 
 /* ───────────────── Canvas ───────────────── */
 
@@ -621,7 +623,12 @@ function buildPuffs() {
 }
 
 function dim(c, f) {
-  return `${Math.round(c.r*f)},${Math.round(c.g*f)},${Math.round(c.b*f)}`;
+
+  return `
+    ${Math.round(c.r*f)},
+    ${Math.round(c.g*f)},
+    ${Math.round(c.b*f)}
+  `;
 }
 
 function drawFrame() {
