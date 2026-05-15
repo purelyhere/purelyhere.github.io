@@ -1,9 +1,354 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>pure</title>
-  </head>
-  <body>
-    <h1>hi</h1>
-  </body>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { width: 100%; height: 100%; background: #080808; overflow: hidden; }
+
+  body {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Sora', sans-serif; user-select: none;
+  }
+
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+
+  .grain {
+    position: fixed; inset: -50%; width: 200%; height: 200%;
+    z-index: 1; pointer-events: none; opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grainShift 0.4s steps(1) infinite;
+  }
+  @keyframes grainShift {
+    0%   { transform: translate(0,0); }
+    25%  { transform: translate(-2%,-1%); }
+    50%  { transform: translate(1%,2%); }
+    75%  { transform: translate(-1%,1%); }
+    100% { transform: translate(2%,-2%); }
+  }
+
+  .card {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; gap: 20px;
+    opacity: 0; animation: riseIn 1.6s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;
+  }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .avatar-link {
+    display: block; width: 58px; height: 58px; border-radius: 50%;
+    flex-shrink: 0; overflow: hidden;
+    border: 0.5px solid rgba(255,255,255,0.07);
+    transition: opacity 0.2s; cursor: pointer; text-decoration: none;
+  }
+  .avatar-link:hover { opacity: 0.8; }
+  .avatar-link img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+
+  .fallback {
+    width: 100%; height: 100%; background: #1c1c1c;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fallback svg { width: 26px; height: 26px; fill: #3a3a3a; }
+
+  .info { display: flex; flex-direction: column; gap: 4px; }
+  .name-row { display: flex; align-items: center; gap: 9px; }
+
+  .username {
+    font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700;
+    color: #c4c4c0; letter-spacing: 0.03em;
+  }
+
+  .badges { display: flex; gap: 5px; align-items: center; }
+  .badges svg { width: 15px; height: 15px; fill: none; stroke: #3a3a3a; stroke-width: 1.5; opacity: 0.7; }
+
+  .handle { font-size: 13px; font-weight: 300; color: #666; letter-spacing: 0.01em; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<div class="grain"></div>
+
+<!--
+  ╔══════════════════════════════════════════════════╗
+  ║  EDIT YOUR DETAILS BELOW                         ║
+  ╠══════════════════════════════════════════════════╣
+  ║  DISCORD_AVATAR_URL                              ║
+  ║    Right-click your Discord profile pic          ║
+  ║    → "Copy image address" and paste it here.     ║
+  ║    The avatar becomes a clickable link to it     ║
+  ║    and the background syncs to your pfp colors.  ║
+  ║                                                  ║
+  ║  USERNAME  — display name shown on the card      ║
+  ║  HANDLE    — the /handle shown below             ║
+  ╚══════════════════════════════════════════════════╝
+-->
+<script>
+  const DISCORD_AVATAR_URL = 'https://cdn.discordapp.com/avatars/385861858495692801/5b96fcf74db28116bd40caaa1549b8dd.png?size=512';      // ← paste Discord avatar URL here
+  const USERNAME           = 'pure';
+  const HANDLE             = '/purelyawake';
+</script>
+
+<div class="card">
+  <a class="avatar-link" id="avatar-link" href="#" target="_blank" rel="noopener">
+    <div class="fallback" id="fallback">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.333 0-10 1.667-10 5v2h20v-2c0-3.333-6.667-5-10-5z"/></svg>
+    </div>
+  </a>
+  <div class="info">
+    <div class="name-row">
+      <span class="username" id="uname"></span>
+      <div class="badges">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M3 6l9-4 9 4v6c0 5.55-3.84 10.74-9 12-5.16-1.26-9-6.45-9-12V6z"/></svg>
+      </div>
+    </div>
+    <span class="handle" id="handle"></span>
+  </div>
+</div>
+
+<script>
+document.getElementById('uname').textContent  = USERNAME;
+document.getElementById('handle').textContent = HANDLE;
+
+const avatarLink = document.getElementById('avatar-link');
+const fallbackEl = document.getElementById('fallback');
+
+/* Default neutral palette used when no URL or extraction fails */
+let palette = { c1:{r:12,g:12,b:12}, c2:{r:18,g:18,b:16} };
+
+if (DISCORD_AVATAR_URL) {
+  avatarLink.href = DISCORD_AVATAR_URL;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    fallbackEl.remove();
+    avatarLink.appendChild(img);
+    palette = extractPalette(img);
+  };
+  img.onerror = () => { /* keep fallback silhouette + neutral palette */ };
+  img.src = DISCORD_AVATAR_URL;
+} else {
+  avatarLink.removeAttribute('href');
+  avatarLink.style.cursor = 'default';
+}
+
+/* ── Color extraction ──────────────────────────────────────────────────────
+   Strategy:
+   1. Draw the image into a small offscreen canvas (80×80).
+   2. Sample only the INNER 60% of pixels (circular mask) to skip
+      transparent edges and background bleed.
+   3. Skip near-white (skin highlights), near-black, low-alpha, and
+      very low-saturation pixels — they don't contribute real color.
+   4. Bucket by hue (30° bins). Weight each pixel by saturation × chroma
+      so vivid colors win over muted ones.
+   5. Return top-2 perceptually distinct buckets (hue diff > 45°).
+   6. If we can't find a distinct second color, slightly shift the first
+      hue rather than returning two near-identical blobs.
+────────────────────────────────────────────────────────────────────────── */
+function extractPalette(img) {
+  try {
+    const SZ = 80;
+    const oc = document.createElement('canvas');
+    oc.width = oc.height = SZ;
+    const cx = oc.getContext('2d');
+    cx.drawImage(img, 0, 0, SZ, SZ);
+    const { data } = cx.getImageData(0, 0, SZ, SZ);
+
+    const half   = SZ / 2;
+    const rLimit = half * 0.60; /* only sample inner 60% radius */
+    const buckets = {};
+
+    for (let y = 0; y < SZ; y++) {
+      for (let x = 0; x < SZ; x++) {
+        const i = (y * SZ + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+
+        /* skip transparent / semi-transparent */
+        if (a < 180) continue;
+
+        /* skip if outside inner circle */
+        const dx = x - half, dy = y - half;
+        if (dx*dx + dy*dy > rLimit*rLimit) continue;
+
+        const [h, s, l] = toHsl(r, g, b);
+
+        /* skip near-grays, near-white skin highlights, near-black */
+        if (s < 0.12) continue;
+        if (l > 0.88) continue;
+        if (l < 0.06) continue;
+
+        const key = Math.round(h / 30) * 30 % 360;
+        if (!buckets[key]) buckets[key] = { w:0, r:0, g:0, b:0, count:0 };
+
+        /* weight: prefer saturated, mid-lightness pixels */
+        const w = s * (1 - Math.abs(l - 0.45) * 1.4) + 0.01;
+        buckets[key].w += w;
+        buckets[key].r += r * w;
+        buckets[key].g += g * w;
+        buckets[key].b += b * w;
+        buckets[key].count++;
+      }
+    }
+
+    const sorted = Object.entries(buckets)
+      .filter(([,v]) => v.count > 3)
+      .sort(([,a],[,b]) => b.w - a.w)
+      .map(([hueKey, v]) => ({
+        hue: +hueKey,
+        r: v.r / v.w,
+        g: v.g / v.w,
+        b: v.b / v.w,
+        w: v.w
+      }));
+
+    if (!sorted.length) return palette;
+
+    const top1 = sorted[0];
+    let top2 = null;
+
+    for (const c of sorted.slice(1)) {
+      const diff = Math.min(Math.abs(top1.hue - c.hue), 360 - Math.abs(top1.hue - c.hue));
+      if (diff > 45) { top2 = c; break; }
+    }
+
+    /* No distinct second color — synthesize one by shifting hue ~120° */
+    if (!top2) {
+      const shiftedH = (top1.hue + 120) % 360;
+      const [sr,sg,sb] = hslToRgb(shiftedH/360, 0.25, 0.18);
+      top2 = { r:sr, g:sg, b:sb };
+    }
+
+    return {
+      c1: { r: Math.round(top1.r), g: Math.round(top1.g), b: Math.round(top1.b) },
+      c2: { r: Math.round(top2.r), g: Math.round(top2.g), b: Math.round(top2.b) }
+    };
+  } catch(e) {
+    return palette;
+  }
+}
+
+function toHsl(r, g, b) {
+  r/=255; g/=255; b/=255;
+  const mx=Math.max(r,g,b), mn=Math.min(r,g,b), d=mx-mn;
+  let h=0, s=0; const l=(mx+mn)/2;
+  if (d) {
+    s = l > 0.5 ? d/(2-mx-mn) : d/(mx+mn);
+    switch(mx) {
+      case r: h=((g-b)/d+(g<b?6:0))/6; break;
+      case g: h=((b-r)/d+2)/6; break;
+      default:h=((r-g)/d+4)/6;
+    }
+    h *= 360;
+  }
+  return [h, s, l];
+}
+
+function hslToRgb(h, s, l) {
+  let r,g,b;
+  if (!s) { r=g=b=l; }
+  else {
+    const q = l<0.5 ? l*(1+s) : l+s-l*s;
+    const p = 2*l-q;
+    r = hue2rgb(p,q,h+1/3);
+    g = hue2rgb(p,q,h);
+    b = hue2rgb(p,q,h-1/3);
+  }
+  return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+}
+function hue2rgb(p,q,t) {
+  if(t<0)t+=1; if(t>1)t-=1;
+  if(t<1/6)return p+(q-p)*6*t;
+  if(t<1/2)return q;
+  if(t<2/3)return p+(q-p)*(2/3-t)*6;
+  return p;
+}
+
+/* ── Canvas cloud renderer ─────────────────────────────────────────────── */
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+let W, H, puffs=[], t=0;
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  buildPuffs();
+}
+
+function buildPuffs() {
+  puffs = [];
+  const n = Math.floor(W * H / 13000);
+  for (let i = 0; i < n; i++) {
+    puffs.push({
+      cx:    Math.random() * W,
+      cy:    H * 0.2 + Math.random() * H * 0.85,
+      r:     55 + Math.random() * 200,
+      side:  Math.random() < 0.5 ? 1 : 2,
+      bri:   0.08 + Math.random() * 0.20,
+      dx:    (Math.random() - 0.5) * 0.07,
+      dy:    (Math.random() - 0.5) * 0.025,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+function dim(c, f) {
+  return `${Math.round(c.r*f)},${Math.round(c.g*f)},${Math.round(c.b*f)}`;
+}
+
+function drawFrame() {
+  ctx.clearRect(0, 0, W, H);
+
+  /* Very dark background from palette colors */
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, `rgba(${dim(palette.c1, 0.08)},1)`);
+  bg.addColorStop(1, `rgba(${dim(palette.c2, 0.08)},1)`);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  /* Puffs */
+  for (const p of puffs) {
+    const pulse = Math.sin(t * 0.0006 + p.phase) * 3;
+    const col   = p.side === 1 ? palette.c1 : palette.c2;
+
+    const grd = ctx.createRadialGradient(p.cx, p.cy, 0, p.cx, p.cy, p.r + pulse);
+    grd.addColorStop(0,   `rgba(${dim(col, p.bri * 0.9)},0.46)`);
+    grd.addColorStop(0.4, `rgba(${dim(col, p.bri * 0.45)},0.24)`);
+    grd.addColorStop(1,   `rgba(0,0,0,0)`);
+
+    ctx.beginPath();
+    ctx.ellipse(p.cx, p.cy, p.r + pulse, (p.r + pulse) * 0.52, 0, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    p.cx += p.dx; p.cy += p.dy;
+    if (p.cx < -p.r)  p.cx = W + p.r;
+    if (p.cx > W+p.r) p.cx = -p.r;
+    if (p.cy < H*0.1) p.dy =  Math.abs(p.dy);
+    if (p.cy > H*1.1) p.dy = -Math.abs(p.dy);
+  }
+
+  /* Vignette */
+  const vg = ctx.createRadialGradient(W/2, H/2, H*0.28, W/2, H/2, H*0.9);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.65)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, W, H);
+
+  t++;
+  requestAnimationFrame(drawFrame);
+}
+
+window.addEventListener('resize', resize);
+resize();
+drawFrame();
+</script>
+</body>
 </html>
