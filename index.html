@@ -289,71 +289,285 @@ function applyPalette() {
 }
 applyPalette();
 
-/* ── k-means color extraction ── */
+/* ── improved avatar color extraction ── */
 function extractColors(img) {
-  const size = 64;
+  const size = 72;
+
   const off = document.createElement('canvas');
   off.width = off.height = size;
-  const cx = off.getContext('2d');
-  cx.drawImage(img, 0, 0, size, size);
+
+  const cx = off.getContext('2d', {
+    willReadFrequently: true
+  });
+
+  cx.imageSmoothingEnabled = true;
+  cx.imageSmoothingQuality = 'high';
+
+  /* clear */
+  cx.clearRect(0, 0, size, size);
+
+  /*
+    crop inward slightly so transparent
+    antialiasing edges do not pollute colors
+  */
+  cx.drawImage(
+    img,
+    6, 6,
+    size - 12,
+    size - 12
+  );
+
   const { data } = cx.getImageData(0, 0, size, size);
+
   const pixels = [];
+
   for (let i = 0; i < data.length; i += 4) {
-    const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
-    if (a < 128) continue;
-    const lum = 0.299*r + 0.587*g + 0.114*b;
-    if (lum < 18 || lum > 237) continue;
-    pixels.push([r,g,b]);
-  }
-  if (pixels.length < 20) return null;
-  const rand = () => pixels[Math.floor(Math.random() * pixels.length)];
-  let c = [rand().slice(), rand().slice()];
-  for (let iter = 0; iter < 12; iter++) {
-    const sums = [[0,0,0,0],[0,0,0,0]];
-    for (const p of pixels) {
-      const k = dist(p,c[0]) < dist(p,c[1]) ? 0 : 1;
-      sums[k][0]+=p[0]; sums[k][1]+=p[1]; sums[k][2]+=p[2]; sums[k][3]++;
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const a = data[i + 3];
+
+    /* ignore transparency */
+    if (a < 235) continue;
+
+    const [h, s, l] = rgbToHsl(r, g, b);
+
+    /* remove grayscale junk */
+    if (s < 0.16) continue;
+
+    /* remove almost black/white */
+    if (l < 0.10 || l > 0.84) continue;
+
+    /*
+      remove muddy premultiplied-alpha
+      orange/brown fringe colors
+    */
+    if (
+      r > 110 &&
+      g > 65 &&
+      b < 70
+    ) continue;
+
+    /*
+      weight saturated pixels more heavily
+    */
+    const weight = Math.floor(1 + s * 4);
+
+    for (let j = 0; j < weight; j++) {
+      pixels.push([r, g, b]);
     }
-    for (let k = 0; k < 2; k++)
-      if (sums[k][3] > 0)
-        c[k] = [sums[k][0]/sums[k][3], sums[k][1]/sums[k][3], sums[k][2]/sums[k][3]];
   }
-  function boost(rgb) {
-    const [h,s,l] = rgbToHsl(...rgb);
-    return hslToRgb(h, Math.min(1, s*1.4+0.2), Math.max(0.35, Math.min(0.6, l)));
+
+  if (pixels.length < 20) {
+    return null;
   }
-  const col0 = boost(c[0]), col1 = boost(c[1]);
+
+  const rand = () =>
+    pixels[Math.floor(Math.random() * pixels.length)];
+
+  let clusters = [
+    rand().slice(),
+    rand().slice()
+  ];
+
+  /* stabilized k-means */
+  for (let iter = 0; iter < 18; iter++) {
+    const sums = [
+      [0,0,0,0],
+      [0,0,0,0]
+    ];
+
+    for (const p of pixels) {
+      const k =
+        dist(p, clusters[0]) <
+        dist(p, clusters[1])
+          ? 0
+          : 1;
+
+      sums[k][0] += p[0];
+      sums[k][1] += p[1];
+      sums[k][2] += p[2];
+      sums[k][3]++;
+    }
+
+    for (let k = 0; k < 2; k++) {
+      if (sums[k][3] > 0) {
+        clusters[k] = [
+          sums[k][0] / sums[k][3],
+          sums[k][1] / sums[k][3],
+          sums[k][2] / sums[k][3]
+        ];
+      }
+    }
+  }
+
+  /*
+    if colors too similar,
+    rotate second hue
+  */
+  if (dist(clusters[0], clusters[1]) < 2800) {
+    clusters[1] = shiftHue(
+      clusters[0],
+      38
+    );
+  }
+
+  /*
+    sort brightest first
+    so glow feels more intentional
+  */
+  clusters.sort((a, b) => {
+    const la =
+      0.299 * a[0] +
+      0.587 * a[1] +
+      0.114 * a[2];
+
+    const lb =
+      0.299 * b[0] +
+      0.587 * b[1] +
+      0.114 * b[2];
+
+    return lb - la;
+  });
+
+  const c1 = enhance(clusters[0], 1.00);
+  const c2 = enhance(clusters[1], 0.82);
+
   return {
-    c1: {r:Math.round(col0[0]),g:Math.round(col0[1]),b:Math.round(col0[2])},
-    c2: {r:Math.round(col1[0]),g:Math.round(col1[1]),b:Math.round(col1[2])},
+    c1: {
+      r: Math.round(c1[0]),
+      g: Math.round(c1[1]),
+      b: Math.round(c1[2])
+    },
+
+    c2: {
+      r: Math.round(c2[0]),
+      g: Math.round(c2[1]),
+      b: Math.round(c2[2])
+    }
   };
 }
 
-function dist(a,b) { return (a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2; }
+/* saturation/lightness shaping */
+function enhance(rgb, brightnessMul = 1) {
+  let [h, s, l] = rgbToHsl(...rgb);
 
+  s = Math.min(
+    1,
+    s * 1.45 + 0.12
+  );
+
+  l = Math.max(
+    0.34,
+    Math.min(
+      0.66,
+      l * brightnessMul
+    )
+  );
+
+  return hslToRgb(h, s, l);
+}
+
+/* hue rotate */
+function shiftHue(rgb, deg) {
+  let [h, s, l] = rgbToHsl(...rgb);
+
+  h = (h + deg / 360) % 1;
+
+  return hslToRgb(h, s, l);
+}
+
+/* rgb distance */
+function dist(a,b) {
+  return (
+    (a[0]-b[0])**2 +
+    (a[1]-b[1])**2 +
+    (a[2]-b[2])**2
+  );
+}
+
+/* rgb -> hsl */
 function rgbToHsl(r,g,b) {
-  r/=255; g/=255; b/=255;
-  const max=Math.max(r,g,b), min=Math.min(r,g,b);
-  let h,s,l=(max+min)/2;
-  if (max===min) { h=s=0; }
-  else {
-    const d=max-min;
-    s=l>0.5?d/(2-max-min):d/(max+min);
-    switch(max){
-      case r: h=((g-b)/d+(g<b?6:0))/6; break;
-      case g: h=((b-r)/d+2)/6; break;
-      case b: h=((r-g)/d+4)/6; break;
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r,g,b);
+  const min = Math.min(r,g,b);
+
+  let h, s;
+  let l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+
+    s = l > 0.5
+      ? d / (2 - max - min)
+      : d / (max + min);
+
+    switch(max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0));
+        break;
+
+      case g:
+        h = ((b - r) / d + 2);
+        break;
+
+      case b:
+        h = ((r - g) / d + 4);
+        break;
     }
+
+    h /= 6;
   }
-  return [h,s,l];
+
+  return [h, s, l];
 }
 
+/* hsl -> rgb */
 function hslToRgb(h,s,l) {
-  if (s===0) return [l*255,l*255,l*255];
-  const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
-  return [hue(p,q,h+1/3)*255, hue(p,q,h)*255, hue(p,q,h-1/3)*255];
-}
+  let r, g, b;
 
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const hue2rgb = (p,q,t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+
+      if (t < 1/6)
+        return p + (q - p) * 6 * t;
+
+      if (t < 1/2)
+        return q;
+
+      if (t < 2/3)
+        return p + (q - p) * (2/3 - t) * 6;
+
+      return p;
+    };
+
+    const q =
+      l < 0.5
+        ? l * (1 + s)
+        : l + s - l * s;
+
+    const p = 2 * l - q;
+
+    r = hue2rgb(p, q, h + 1/3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1/3);
+  }
+
+  return [
+    r * 255,
+    g * 255,
+    b * 255
+  ];
+}
 function hue(p,q,t) {
   if(t<0)t++; if(t>1)t--;
   if(t<1/6)return p+(q-p)*6*t;
