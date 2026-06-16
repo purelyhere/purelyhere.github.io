@@ -4,19 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta property="og:type" content="website">
-<meta property="og:title" content="pure">
-<meta property="og:description" content="hi there">
+<meta property="og:title" content="pure 👑">
+<meta property="og:description" content="perpetually awake & probably listening to music. you weren't supposed to find this — but hey, welcome.">
 <meta property="og:url" content="https://pure.wyvern.im/">
-<meta property="og:image" content="https://raw.githubusercontent.com/purelyhere/purelyhere.github.io/main/pink-crown.png?v=2">
+<meta property="og:image" content="https://raw.githubusercontent.com/purelyhere/purelyhere.github.io/main/white-crown.png">
 <meta property="og:image:width" content="256">
 <meta property="og:image:height" content="256">
 <meta name="twitter:card" content="summary">
-<meta name="theme-color" content="#ff5ca8">
+<meta name="theme-color" content="#0d0d0f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 3h14v2H5z'/%3E%3C/svg%3E">
 <title>.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root { --c1: 255,105,180; --c2: 255,60,140; }
+:root { --c1: 150,150,160; --c2: 90,90,110; }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -51,6 +53,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
   padding: 24px 28px; border-radius: 22px;
   border: 1px solid rgba(255,255,255,0.06);
   background: linear-gradient(to bottom right, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
   box-shadow: 0 0 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03);
   overflow: hidden; transform-style: preserve-3d; will-change: transform;
@@ -131,21 +134,19 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
   animation: textIn 1s ease forwards; animation-delay: 0.8s;
 }
 
-.handle {
-  font-size: 13px; font-weight: 300; color: #666;
-  opacity: 0; transform: translateY(5px);
-  animation: textIn 1s ease forwards; animation-delay: 0.95s;
-}
-
-.user-id {
-  font-size: 10px; font-weight: 300; color: #444;
-  font-family: 'Space Mono', monospace; letter-spacing: 0.02em;
+.id-btn {
+  display: inline-flex; align-items: center; gap: 5px; width: fit-content;
+  margin-top: 1px; padding: 3px 9px; border-radius: 8px;
+  font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.04em;
+  color: #777; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07); cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
   opacity: 0; transform: translateY(5px);
   animation: textIn 1s ease forwards; animation-delay: 1.05s;
-  cursor: pointer; transition: color 0.2s ease;
 }
-.user-id:hover { color: #888; }
-.user-id.copied { color: #23a559 !important; }
+.id-btn:hover { color: #c4c4c0; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); }
+.id-btn.copied { color: #23a559; border-color: rgba(35,165,89,0.4); }
+.id-btn svg { width: 12px; height: 12px; fill: currentColor; }
 
 .custom-status {
   font-size: 12px; font-weight: 300; color: #888; margin-top: 2px;
@@ -156,11 +157,28 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
 .friends {
   font-size: 12px; font-weight: 300; color: #999;
-  margin-top: 4px; line-height: 1.4; max-width: 240px;
-  opacity: 0; transform: translateY(5px);
-  animation: textIn 1s ease forwards; animation-delay: 1.2s;
+  line-height: 1.5; max-width: 340px;
 }
 .friends b { color: #c4c4c0; font-weight: 600; }
+
+/* Profile stack + friends box */
+.stack {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  transform-style: preserve-3d; will-change: transform;
+}
+.friends-box {
+  display: none; width: 100%; max-width: 340px;
+  padding: 12px 18px; border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(to bottom right, rgba(255,255,255,0.03), rgba(255,255,255,0.012));
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 0 40px rgba(0,0,0,0.3);
+  opacity: 0; animation: cardReveal 1.6s cubic-bezier(0.16,1,0.3,1) forwards;
+  animation-delay: 0.3s;
+}
+.friends-box.show { display: block; }
 
 @keyframes textIn { to { opacity: 1; transform: translateY(0); } }
 
@@ -178,6 +196,7 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
   width: 220px; padding: 12px 14px; border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.06);
   background: linear-gradient(to bottom right, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
   box-shadow: 0 0 30px rgba(0,0,0,0.3);
   opacity: 0; transform: translateY(8px);
@@ -213,12 +232,121 @@ canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
   transition: background 0.6s ease;
 }
 #player-time { font-size: 9px; color: #444; font-family: 'Space Mono', monospace; white-space: nowrap; }
+
+#player-volume { display: flex; align-items: center; gap: 10px; }
+#vol-slider {
+  -webkit-appearance: none; appearance: none;
+  flex: 1; height: 2px; border-radius: 2px; cursor: pointer;
+  background: rgba(255,255,255,0.1);
+}
+#vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(var(--c1), 0.95); cursor: pointer;
+  box-shadow: 0 0 6px rgba(var(--c1), 0.6);
+}
+#vol-slider::-moz-range-thumb {
+  width: 10px; height: 10px; border: none; border-radius: 50%;
+  background: rgba(var(--c1), 0.95); cursor: pointer;
+}
+
+/* Presence: Spotify + activity */
+.spotify, .activity {
+  display: none; align-items: center; gap: 8px;
+  margin-top: 5px; max-width: 240px; text-decoration: none;
+  opacity: 0; transform: translateY(5px);
+  animation: textIn 1s ease forwards; animation-delay: 1.15s;
+}
+.spotify.show, .activity.show { display: flex; }
+.spotify img {
+  width: 30px; height: 30px; border-radius: 5px; flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(0,0,0,0.4);
+}
+.spotify .ico, .activity .ico { width: 14px; height: 14px; flex-shrink: 0; }
+.spotify .ico { fill: #1db954; }
+.activity .ico { fill: #9b84ff; }
+.spotify .meta, .activity .meta {
+  display: flex; flex-direction: column; min-width: 0; line-height: 1.3;
+}
+.spotify .t, .activity .t {
+  font-size: 12px; color: #c4c4c0; font-weight: 400;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.spotify .s, .activity .s {
+  font-size: 11px; color: #777; font-weight: 300;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Visit counter */
+#visits {
+  position: fixed; bottom: 16px; right: 18px; z-index: 12;
+  font-family: 'Space Mono', monospace; font-size: 10px; line-height: 1.4;
+  color: rgba(255,255,255,0.16); letter-spacing: 0.04em;
+  text-align: right; max-width: 220px;
+  pointer-events: none; user-select: none;
+  opacity: 0; animation: textIn 1.6s ease forwards; animation-delay: 1.8s;
+}
+#visits b { color: rgba(255,255,255,0.34); font-weight: 400; }
+
+/* ID verify toast */
+#id-toast {
+  position: fixed; left: 50%; bottom: 26px; z-index: 40;
+  transform: translateX(-50%) translateY(12px);
+  width: min(360px, calc(100vw - 36px));
+  padding: 14px 16px; border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(to bottom right, rgba(20,20,24,0.92), rgba(12,12,15,0.92));
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+#id-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.id-toast-id {
+  font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+  color: #c4c4c0; letter-spacing: 0.03em; margin-bottom: 6px; padding-right: 20px;
+  word-break: break-all; -webkit-user-select: all; user-select: all;
+}
+.id-toast-msg { font-size: 11.5px; font-weight: 300; color: #9a9a9a; line-height: 1.55; }
+.id-toast-msg a {
+  color: rgba(var(--c1), 0.95); text-decoration: none;
+  border-bottom: 1px solid rgba(var(--c1), 0.4); transition: color 0.2s ease;
+}
+.id-toast-msg a:hover { color: #fff; }
+#id-toast-close {
+  position: absolute; top: 8px; right: 10px;
+  background: none; border: none; color: #666;
+  font-size: 17px; line-height: 1; cursor: pointer; padding: 2px;
+  transition: color 0.2s ease;
+}
+#id-toast-close:hover { color: #c4c4c0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+  .status-dot::after { animation: none; }
+  .card, .avatar-link, .display-name, .id-btn, .custom-status,
+  .friends, .badges, .spotify, .activity, .friends-box, #visits {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}
 </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
 <div class="grain"></div>
+
+<noscript>
+  <div style="position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:30;
+              font-family:'Space Mono',monospace; font-size:11px; color:#9a9a9a;
+              background:rgba(0,0,0,0.55); padding:8px 14px; border-radius:10px;
+              border:1px solid rgba(255,255,255,0.08);
+              -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);">
+    enable javascript for the live profile, music &amp; background &#10024;
+  </div>
+</noscript>
 
 <script>
 const DISCORD_USER_ID = '385861858495692801';
@@ -235,9 +363,10 @@ const TITLE_LINES = [
 ];
 </script>
 
+<div class="stack">
 <div class="card">
   <div class="avatar-wrap">
-    <a class="avatar-link" id="avatar-link" href="#" target="_blank" rel="noopener">
+    <a class="avatar-link" id="avatar-link" target="_blank" rel="noopener">
       <div class="fallback" id="fallback">
         <svg viewBox="0 0 24 24"><path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.333 0-10 1.667-10 5v2h20v-2c0-3.333-6.667-5-10-5z"/></svg>
       </div>
@@ -253,12 +382,21 @@ const TITLE_LINES = [
         <svg viewBox="0 0 24 24"><path d="M3 6l9-4 9 4v6c0 5.55-3.84 10.74-9 12-5.16-1.26-9-6.45-9-12V6z"/></svg>
       </div>
     </div>
-    <span class="handle" id="handle">@purelyawake</span>
-    <span class="user-id" id="user-id">385861858495692801</span>
+    <button class="id-btn" id="id-btn" type="button" aria-label="copy my Discord ID" title="copy my Discord ID">
+      <svg viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 00-2 2v12h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>
+      copy id
+    </button>
     <span class="custom-status" id="custom-status"></span>
-    <span class="friends" id="friends"></span>
+    <a class="spotify" id="spotify" target="_blank" rel="noopener"></a>
+    <span class="activity" id="activity"></span>
   </div>
 </div>
+
+<div class="friends-box" id="friends-box">
+  <span class="friends" id="friends"></span>
+</div>
+
+</div><!-- /.stack -->
 
 <div id="player">
   <div id="player-title">loading...</div>
@@ -277,15 +415,39 @@ const TITLE_LINES = [
     </div>
     <span id="player-time">0:00</span>
   </div>
+  <div id="player-volume">
+    <button class="p-btn" id="mute-btn" aria-label="mute / unmute">
+      <svg id="vol-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    </button>
+    <input id="vol-slider" type="range" min="0" max="1" step="0.01" value="0.2" aria-label="volume">
+  </div>
+</div>
+
+<div id="visits"></div>
+
+<div id="id-toast" role="dialog" aria-live="polite">
+  <button id="id-toast-close" type="button" aria-label="close">&times;</button>
+  <div class="id-toast-id">385861858495692801</div>
+  <div class="id-toast-msg">
+    copied — this is my real Discord ID. names &amp; avatars can be faked, so verify
+    anyone claiming to be me by looking the ID up at
+    <a href="https://discord.dog/tools/discord-id-lookup" target="_blank" rel="noopener">discord.dog</a>
+    — it shows when the account was created, so you can catch fresh alts &amp; impersonators.
+  </div>
 </div>
 
 <script>
 /* ── Palette ── */
-let palette = { c1: {r:255,g:105,b:180}, c2: {r:255,g:60,b:140} };
+/* neutral until the avatar's real colours are extracted */
+let palette = { c1: {r:150,g:150,b:160}, c2: {r:90,g:90,b:110} };
+
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+const hex2 = v => Math.round(v).toString(16).padStart(2, '0');
 
 function applyPalette() {
   document.documentElement.style.setProperty('--c1', `${palette.c1.r},${palette.c1.g},${palette.c1.b}`);
   document.documentElement.style.setProperty('--c2', `${palette.c2.r},${palette.c2.g},${palette.c2.b}`);
+  if (themeMeta) themeMeta.content = '#' + hex2(palette.c1.r) + hex2(palette.c1.g) + hex2(palette.c1.b);
 }
 applyPalette();
 
@@ -327,50 +489,39 @@ function extractColors(img) {
     const b = data[i + 2];
     const a = data[i + 3];
 
-    /* ignore transparency */
+    /* ignore transparent edges only */
     if (a < 235) continue;
 
-    const [h, s, l] = rgbToHsl(r, g, b);
+    /* drop only near-pure black/white so padding doesn't win,
+       but keep every real colour (any hue, including greys) */
+    const [, , l] = rgbToHsl(r, g, b);
+    if (l < 0.08 || l > 0.92) continue;
 
-    /* remove grayscale junk */
-    if (s < 0.16) continue;
-
-    /* remove almost black/white */
-    if (l < 0.10 || l > 0.84) continue;
-
-    /*
-      remove muddy premultiplied-alpha
-      orange/brown fringe colors
-    */
-    if (
-      r > 110 &&
-      g > 65 &&
-      b < 70
-    ) continue;
-
-    /*
-      weight saturated pixels more heavily
-    */
-    const weight = Math.floor(1 + s * 4);
-
-    for (let j = 0; j < weight; j++) {
-      pixels.push([r, g, b]);
-    }
+    pixels.push([r, g, b]);
   }
 
   if (pixels.length < 20) {
     return null;
   }
 
-  const rand = () =>
-    pixels[Math.floor(Math.random() * pixels.length)];
+  /* deterministic, colour-distinct seeds:
+     the brightest pixel, then the pixel furthest from it */
+  const lum = p => 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2];
 
-  let clusters = [
-    rand().slice(),
-    rand().slice()
-  ];
+  let seedA = pixels[0];
+  for (const p of pixels) if (lum(p) > lum(seedA)) seedA = p;
 
-  /* stabilized k-means */
+  let seedB = pixels[0], far = -1;
+  for (const p of pixels) {
+    const d = dist(p, seedA);
+    if (d > far) { far = d; seedB = p; }
+  }
+
+  let clusters = [seedA.slice(), seedB.slice()];
+  let counts   = [0, 0];
+
+  /* k-means — every pixel counts once, so clusters reflect
+     actual area (the two *major* colours of the image) */
   for (let iter = 0; iter < 18; iter++) {
     const sums = [
       [0,0,0,0],
@@ -399,39 +550,25 @@ function extractColors(img) {
         ];
       }
     }
+
+    counts = [sums[0][3], sums[1][3]];
   }
 
   /*
-    if colors too similar,
-    rotate second hue
+    if the two colours are nearly identical, nudge the
+    second hue so the gradient still reads as two tones
   */
-  if (dist(clusters[0], clusters[1]) < 2800) {
-    clusters[1] = shiftHue(
-      clusters[0],
-      38
-    );
+  if (dist(clusters[0], clusters[1]) < 2200) {
+    clusters[1] = shiftHue(clusters[0], 32);
   }
 
-  /*
-    sort brightest first
-    so glow feels more intentional
-  */
-  clusters.sort((a, b) => {
-    const la =
-      0.299 * a[0] +
-      0.587 * a[1] +
-      0.114 * a[2];
-
-    const lb =
-      0.299 * b[0] +
-      0.587 * b[1] +
-      0.114 * b[2];
-
-    return lb - la;
-  });
+  /* most dominant colour (largest cluster) first */
+  if (counts[1] > counts[0]) {
+    [clusters[0], clusters[1]] = [clusters[1], clusters[0]];
+  }
 
   const c1 = enhance(clusters[0], 1.00);
-  const c2 = enhance(clusters[1], 0.82);
+  const c2 = enhance(clusters[1], 0.90);
 
   return {
     c1: {
@@ -448,19 +585,18 @@ function extractColors(img) {
   };
 }
 
-/* saturation/lightness shaping */
+/* gentle shaping — keep the pfp's real hue, just make it
+   readable as a soft glow (no saturation floor, so greys
+   stay grey instead of being tinted) */
 function enhance(rgb, brightnessMul = 1) {
   let [h, s, l] = rgbToHsl(...rgb);
 
-  s = Math.min(
-    1,
-    s * 1.45 + 0.12
-  );
+  s = Math.min(1, s * 1.15);
 
   l = Math.max(
-    0.34,
+    0.30,
     Math.min(
-      0.66,
+      0.70,
       l * brightnessMul
     )
   );
@@ -568,13 +704,6 @@ function hslToRgb(h,s,l) {
     b * 255
   ];
 }
-function hue(p,q,t) {
-  if(t<0)t++; if(t>1)t--;
-  if(t<1/6)return p+(q-p)*6*t;
-  if(t<1/2)return q;
-  if(t<2/3)return p+(q-p)*(2/3-t)*6;
-  return p;
-}
 
 /* ── DOM refs ── */
 const avatarLink   = document.getElementById('avatar-link');
@@ -582,9 +711,9 @@ const fallbackEl   = document.getElementById('fallback');
 const friendsEl    = document.getElementById('friends');
 const statusDot    = document.getElementById('status-dot');
 const displayNameEl= document.getElementById('display-name');
-const handleEl     = document.getElementById('handle');
 const customStatus = document.getElementById('custom-status');
-const userIdEl     = document.getElementById('user-id');
+const spotifyEl    = document.getElementById('spotify');
+const activityEl   = document.getElementById('activity');
 
 /* ── Status ── */
 function applyStatus(status) {
@@ -595,20 +724,57 @@ function applyStatus(status) {
 
 function applyCustomStatus(activities) {
   const custom = (activities || []).find(a => a.type === 4 && a.state);
-  if (custom) customStatus.textContent = custom.state;
+  if (custom) { customStatus.textContent = custom.state; customStatus.style.display = ''; }
   else customStatus.style.display = 'none';
+}
+
+/* ── Presence: Spotify + rich activity ── */
+const SPOTIFY_ICON = '<svg class="ico" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.52 17.34c-.24.36-.66.48-1.02.24-2.82-1.74-6.36-2.1-10.56-1.14-.42.12-.78-.18-.9-.54-.12-.42.18-.78.54-.9 4.56-1.02 8.52-.6 11.64 1.32.42.18.48.66.3 1.02zm1.44-3.3c-.3.42-.84.6-1.26.3-3.24-1.98-8.16-2.58-11.94-1.38-.48.12-1.02-.12-1.14-.6-.12-.48.12-1.02.6-1.14C9.6 9.9 15 10.56 18.72 12.84c.36.18.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.3c-.6.18-1.2-.18-1.38-.72-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.72 1.62.54.3.72 1.02.42 1.56-.3.42-1.02.6-1.56.3z"/></svg>';
+const GAME_ICON = '<svg class="ico" viewBox="0 0 24 24"><path d="M7.5 6h9a5.5 5.5 0 015.5 5.5v.4a4 4 0 01-7.26 2.3l-.34-.45H9.6l-.34.45A4 4 0 012 12v-.5A5.5 5.5 0 017.5 6zM6 9v1.5H4.5V12H6v1.5h1.5V12H9v-1.5H7.5V9H6zm10 .25a1.1 1.1 0 100 2.2 1.1 1.1 0 000-2.2zm1.9 2.4a1.1 1.1 0 100 2.2 1.1 1.1 0 000-2.2z"/></svg>';
+
+function esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g,
+    c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function applyPresence(data) {
+  const s = data.listening_to_spotify ? data.spotify : null;
+  if (s) {
+    spotifyEl.href = s.track_id ? `https://open.spotify.com/track/${s.track_id}` : '#';
+    spotifyEl.innerHTML = SPOTIFY_ICON +
+      (s.album_art_url ? `<img src="${esc(s.album_art_url)}" alt="">` : '') +
+      `<span class="meta"><span class="t">${esc(s.song)}</span><span class="s">${esc(s.artist)}</span></span>`;
+    spotifyEl.classList.add('show');
+  } else {
+    spotifyEl.classList.remove('show');
+    spotifyEl.innerHTML = '';
+  }
+
+  const game = (data.activities || []).find(a => a.type === 0);
+  if (game) {
+    const sub = [game.details, game.state].filter(Boolean).join(' · ');
+    activityEl.innerHTML = GAME_ICON +
+      `<span class="meta"><span class="t">${esc(game.name)}</span>` +
+      (sub ? `<span class="s">${esc(sub)}</span>` : '') + `</span>`;
+    activityEl.classList.add('show');
+  } else {
+    activityEl.classList.remove('show');
+    activityEl.innerHTML = '';
+  }
 }
 
 /* ── Avatar ── */
 function loadAvatar(url) {
   avatarLink.href = url;
+  currentAvatar = url;
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
     fallbackEl.remove();
     avatarLink.appendChild(img);
-    const colors = extractColors(img);
-    if (colors) { palette = colors; applyPalette(); buildPuffs(); }
+    let colors = null;
+    try { colors = extractColors(img); } catch (e) { /* tainted canvas → keep neutral palette */ }
+    if (colors) { palette = colors; applyPalette(); buildPuffs(); buildGradients(); }
   };
   img.src = url;
 }
@@ -618,7 +784,7 @@ function pollStatus() {
   setInterval(() => {
     fetch(LANYARD_URL)
       .then(r => r.json())
-      .then(({ data }) => { applyStatus(data.discord_status); applyCustomStatus(data.activities); })
+      .then(({ data }) => { applyStatus(data.discord_status); applyCustomStatus(data.activities); applyPresence(data); })
       .catch(() => {});
   }, 30000);
 }
@@ -629,9 +795,9 @@ fetch(LANYARD_URL)
     if (!json.success) throw new Error('not monitored');
     const { data } = json;
     if (data.discord_user.display_name) displayNameEl.textContent = data.discord_user.display_name;
-    if (data.discord_user.username)     handleEl.textContent = '@' + data.discord_user.username;
     applyStatus(data.discord_status);
     applyCustomStatus(data.activities);
+    applyPresence(data);
     const av = data.discord_user.avatar;
     const id = data.discord_user.id;
     if (av) {
@@ -644,28 +810,45 @@ fetch(LANYARD_URL)
   })
   .catch(() => loadAvatar(FALLBACK_AVATAR));
 
-/* ── Copy UID ── */
-userIdEl.addEventListener('click', () => {
-  navigator.clipboard.writeText(DISCORD_USER_ID).then(() => {
-    const prev = userIdEl.textContent;
-    userIdEl.textContent = 'copied!';
-    userIdEl.classList.add('copied');
-    setTimeout(() => { userIdEl.textContent = prev; userIdEl.classList.remove('copied'); }, 1500);
-  }).catch(() => {});
+/* ── Copy ID + verify toast ── */
+const idBtn        = document.getElementById('id-btn');
+const idToast      = document.getElementById('id-toast');
+const idToastClose = document.getElementById('id-toast-close');
+let idToastTimer;
+
+function hideIdToast() {
+  clearTimeout(idToastTimer);
+  idToast.classList.remove('show');
+}
+
+idBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(DISCORD_USER_ID).catch(() => {});
+  idBtn.classList.add('copied');
+  setTimeout(() => idBtn.classList.remove('copied'), 1500);
+  idToast.classList.add('show');
+  clearTimeout(idToastTimer);
+  idToastTimer = setTimeout(hideIdToast, 9000);
 });
 
-/* ── Friends list ── */
+idToastClose.addEventListener('click', hideIdToast);
+
+/* ── Friends list (own box under the profile) ── */
+const friendsBox = document.getElementById('friends-box');
 if (FRIENDS_TXT_URL) {
   fetch(FRIENDS_TXT_URL)
     .then(r => r.text())
     .then(text => {
       const list = text.split(/[\r\n,]+/).map(s => s.trim()).filter(Boolean);
-      if (list.length) friendsEl.innerHTML = `<b>friends:</b> ${list.join(', ')}`;
-      else friendsEl.remove();
+      if (list.length) {
+        friendsEl.innerHTML = `<b>Friends:</b> ${list.join(', ')}`;
+        friendsBox.classList.add('show');
+      } else {
+        friendsBox.remove();
+      }
     })
-    .catch(() => friendsEl.remove());
+    .catch(() => friendsBox.remove());
 } else {
-  friendsEl.remove();
+  friendsBox.remove();
 }
 
 /* ── Dynamic title ── */
@@ -693,31 +876,16 @@ async function titleLoop() {
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 titleLoop();
 
-/* ── Mouse + gyro parallax ── */
+/* ── Mouse + gyro parallax + cursor trail ── */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let mx = 0, my = 0;
-const card = document.querySelector('.card');
+const stage = document.querySelector('.stack');
+const particles = [];
 
 window.addEventListener('mousemove', e => {
   mx = e.clientX / innerWidth  - 0.5;
   my = e.clientY / innerHeight - 0.5;
-});
-
-window.addEventListener('deviceorientation', e => {
-  if (e.gamma == null) return;
-  mx = Math.max(-0.5, Math.min(0.5, e.gamma / 30));
-  my = Math.max(-0.5, Math.min(0.5, (e.beta - 30) / 30));
-});
-
-function parallaxLoop() {
-  card.style.transform = `translate3d(${mx*10}px,${my*10}px,0) rotateX(${my*-5}deg) rotateY(${mx*5}deg)`;
-  requestAnimationFrame(parallaxLoop);
-}
-parallaxLoop();
-
-/* ── Cursor trail particles ── */
-const particles = [];
-
-window.addEventListener('mousemove', e => {
+  if (reduceMotion) return;
   const col = Math.random() < 0.5 ? palette.c1 : palette.c2;
   particles.push({
     x: e.clientX + (Math.random() - 0.5) * 6,
@@ -731,28 +899,111 @@ window.addEventListener('mousemove', e => {
   });
 });
 
-/* ── Music player ── */
-const audio      = new Audio();
-audio.volume     = 0.03;
-const playerEl   = document.getElementById('player');
-const titleEl    = document.getElementById('player-title');
-const playBtn    = document.getElementById('play-btn');
-const playIcon   = document.getElementById('play-icon');
-const prevBtn    = document.getElementById('prev-btn');
-const nextBtn    = document.getElementById('next-btn');
-const progressEl = document.getElementById('player-progress');
-const barEl      = document.getElementById('player-bar');
-const timeEl     = document.getElementById('player-time');
+window.addEventListener('deviceorientation', e => {
+  if (e.gamma == null) return;
+  mx = Math.max(-0.5, Math.min(0.5, e.gamma / 30));
+  my = Math.max(-0.5, Math.min(0.5, (e.beta - 30) / 30));
+});
 
-let tracks = [], trackIndex = 0, isPlaying = false;
+/* ── Music player ── */
+const audio       = new Audio();
+audio.crossOrigin = 'anonymous';   // required for the Web Audio visualiser
+const playerEl    = document.getElementById('player');
+const titleEl     = document.getElementById('player-title');
+const playBtn     = document.getElementById('play-btn');
+const playIcon    = document.getElementById('play-icon');
+const prevBtn     = document.getElementById('prev-btn');
+const nextBtn     = document.getElementById('next-btn');
+const progressEl  = document.getElementById('player-progress');
+const barEl       = document.getElementById('player-bar');
+const timeEl      = document.getElementById('player-time');
+const muteBtn     = document.getElementById('mute-btn');
+const volIcon     = document.getElementById('vol-icon');
+const volSlider   = document.getElementById('vol-slider');
+
+let tracks = [], trackIndex = 0, isPlaying = false, currentAvatar = '';
 
 const PLAY_PATH  = 'M8 5v14l11-7z';
 const PAUSE_PATH = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
+const VOL_ON  = 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z';
+const VOL_OFF = 'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z';
 
 function fmt(s) {
   return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
 }
 
+/* ── Web Audio graph (drives the reactive background) ── */
+let audioCtx, analyser = null, freqData = null, gainNode = null,
+    audioLevel = 0, audioGraphReady = false;
+
+function initAudioGraph() {
+  if (audioGraphReady) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    audioCtx = new Ctx();
+    const source = audioCtx.createMediaElementSource(audio);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.8;
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+    gainNode = audioCtx.createGain();
+    /* analyser is tapped BEFORE the gain node, so the visualiser reacts
+       at full amplitude no matter how quiet the listening volume is */
+    source.connect(analyser);
+    analyser.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    audio.volume = 1;
+    audioGraphReady = true;
+    applyVolume();
+  } catch (e) {
+    analyser = null; gainNode = null; audioGraphReady = false;
+  }
+}
+
+/* ── Volume / mute (persisted) ── */
+let savedVol = 0.2, muted = false;
+try {
+  const sv = parseFloat(localStorage.getItem('pure_vol'));
+  if (!isNaN(sv)) savedVol = Math.min(1, Math.max(0, sv));
+  muted = localStorage.getItem('pure_muted') === '1';
+} catch (e) {}
+
+function applyVolume() {
+  const v = muted ? 0 : savedVol;
+  if (gainNode) gainNode.gain.value = v; else audio.volume = v;
+  volSlider.value = savedVol;
+  volSlider.style.background =
+    `linear-gradient(to right, rgba(var(--c1),0.7) ${savedVol*100}%, rgba(255,255,255,0.1) ${savedVol*100}%)`;
+  volIcon.innerHTML = `<path d="${(muted || savedVol === 0) ? VOL_OFF : VOL_ON}"/>`;
+}
+function persistVol() {
+  try {
+    localStorage.setItem('pure_vol', String(savedVol));
+    localStorage.setItem('pure_muted', muted ? '1' : '0');
+  } catch (e) {}
+}
+function setVolume(v) { savedVol = Math.min(1, Math.max(0, v)); muted = false; applyVolume(); persistVol(); }
+function toggleMute() { muted = !muted; applyVolume(); persistVol(); }
+applyVolume();
+
+volSlider.addEventListener('input', () => setVolume(parseFloat(volSlider.value)));
+muteBtn.addEventListener('click', toggleMute);
+
+/* ── Media Session (OS / lockscreen / media-key controls) ── */
+function updateMediaSession() {
+  if (!('mediaSession' in navigator) || !tracks.length) return;
+  const name = decodeURIComponent(tracks[trackIndex]).replace(/\.mp3$/i,'').replace(/_/g,' ');
+  const meta = { title: name, artist: 'pure', album: 'pure.wyvern.im' };
+  if (currentAvatar) meta.artwork = [{ src: currentAvatar, sizes: '256x256', type: 'image/png' }];
+  try { navigator.mediaSession.metadata = new MediaMetadata(meta); } catch (e) {}
+  navigator.mediaSession.setActionHandler('play',          () => { if (!isPlaying) togglePlay(); });
+  navigator.mediaSession.setActionHandler('pause',         () => { if (isPlaying) togglePlay(); });
+  navigator.mediaSession.setActionHandler('previoustrack', () => setTrack(trackIndex - 1));
+  navigator.mediaSession.setActionHandler('nexttrack',     () => setTrack(trackIndex + 1));
+}
+
+/* ── Playback ── */
 function setTrack(i) {
   trackIndex = ((i % tracks.length) + tracks.length) % tracks.length;
   const name = decodeURIComponent(tracks[trackIndex]).replace(/\.mp3$/i,'').replace(/_/g,' ');
@@ -760,28 +1011,49 @@ function setTrack(i) {
   audio.src = MUSIC_BASE_URL + tracks[trackIndex];
   barEl.style.width = '0%';
   timeEl.textContent = '0:00';
-  if (isPlaying) audio.play().catch(() => {});
+  updateMediaSession();
+  if (isPlaying) doPlay();
 }
 
+function doPlay() {
+  initAudioGraph();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  audio.play().catch(() => {});
+  isPlaying = true;
+  playIcon.innerHTML = `<path d="${PAUSE_PATH}"/>`;
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+}
+function doPause() {
+  audio.pause();
+  isPlaying = false;
+  playIcon.innerHTML = `<path d="${PLAY_PATH}"/>`;
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+  saveProgress();
+}
 function togglePlay() {
   if (!tracks.length) return;
-  if (isPlaying) {
-    audio.pause();
-    isPlaying = false;
-    playIcon.innerHTML = `<path d="${PLAY_PATH}"/>`;
-  } else {
-    audio.play().catch(() => {});
-    isPlaying = true;
-    playIcon.innerHTML = `<path d="${PAUSE_PATH}"/>`;
-  }
+  isPlaying ? doPause() : doPlay();
 }
+
+/* ── Resume where you left off (persisted) ── */
+function saveProgress() {
+  try {
+    if (tracks.length) {
+      localStorage.setItem('pure_track', tracks[trackIndex]);
+      localStorage.setItem('pure_time', String(audio.currentTime || 0));
+    }
+  } catch (e) {}
+}
+let lastSaveT = 0;
 
 audio.addEventListener('timeupdate', () => {
   if (!audio.duration) return;
   barEl.style.width = (audio.currentTime / audio.duration * 100) + '%';
   timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+  if (Math.abs(audio.currentTime - lastSaveT) > 2) { lastSaveT = audio.currentTime; saveProgress(); }
 });
 audio.addEventListener('ended', () => setTrack(trackIndex + 1));
+window.addEventListener('pagehide', saveProgress);
 
 progressEl.addEventListener('click', e => {
   if (!audio.duration) return;
@@ -792,6 +1064,19 @@ progressEl.addEventListener('click', e => {
 playBtn.addEventListener('click', togglePlay);
 prevBtn.addEventListener('click', () => setTrack(trackIndex - 1));
 nextBtn.addEventListener('click', () => setTrack(trackIndex + 1));
+
+/* ── Keyboard shortcuts ── */
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.isContentEditable) return;
+  switch (e.code) {
+    case 'Space':      e.preventDefault(); togglePlay(); break;
+    case 'ArrowRight': setTrack(trackIndex + 1); break;
+    case 'ArrowLeft':  setTrack(trackIndex - 1); break;
+    case 'ArrowUp':    e.preventDefault(); setVolume(savedVol + 0.05); break;
+    case 'ArrowDown':  e.preventDefault(); setVolume(savedVol - 0.05); break;
+    case 'KeyM':       toggleMute(); break;
+  }
+});
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -805,20 +1090,60 @@ fetch(MUSIC_API_URL)
   .then(r => r.json())
   .then(files => {
     tracks = shuffle(files.filter(f => f.name.match(/\.mp3$/i)).map(f => encodeURIComponent(f.name)));
-    if (tracks.length) { setTrack(0); playerEl.classList.add('ready'); }
-    else { titleEl.textContent = 'no songs found'; playerEl.classList.add('ready'); }
+    if (!tracks.length) { titleEl.textContent = 'no songs found'; playerEl.classList.add('ready'); return; }
+
+    /* resume the last track + position if we saved one */
+    let startIndex = 0, startTime = 0;
+    try {
+      const savedTrack = localStorage.getItem('pure_track');
+      const idx = savedTrack ? tracks.indexOf(savedTrack) : -1;
+      if (idx >= 0) { startIndex = idx; startTime = parseFloat(localStorage.getItem('pure_time')) || 0; }
+    } catch (e) {}
+
+    setTrack(startIndex);
+    if (startTime > 0) {
+      audio.addEventListener('loadedmetadata', () => {
+        if (startTime < audio.duration) { audio.currentTime = startTime; lastSaveT = startTime; }
+      }, { once: true });
+    }
+    playerEl.classList.add('ready');
   })
   .catch(() => { titleEl.textContent = 'no songs found'; playerEl.classList.add('ready'); });
+
+/* ── Visit counter (localStorage) ── */
+(() => {
+  const visitsEl = document.getElementById('visits');
+  let visits = 1;
+  try {
+    visits = (parseInt(localStorage.getItem('pure_visits'), 10) || 0) + 1;
+    localStorage.setItem('pure_visits', visits);
+  } catch (e) {}
+  if (visits > 5) {
+    visitsEl.innerHTML = `woah! you've been here <b>${visits}</b> times — so whats up?`;
+  } else {
+    visitsEl.textContent = visits === 1 ? 'first time here' : `visit #${visits}`;
+  }
+})();
 
 /* ── Canvas ── */
 const canvas = document.getElementById('c');
 const ctx    = canvas.getContext('2d');
-let W, H, puffs = [], t = 0;
+let W, H, puffs = [], t = 0, bgGrad, vgGrad, rafId = null;
 
 function resize() {
   W = canvas.width  = innerWidth;
   H = canvas.height = innerHeight;
   buildPuffs();
+  buildGradients();
+}
+
+function buildGradients() {
+  bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, `rgba(${dim(palette.c1,0.08)},1)`);
+  bgGrad.addColorStop(1, `rgba(${dim(palette.c2,0.08)},1)`);
+  vgGrad = ctx.createRadialGradient(W/2, H/2, H*0.28, W/2, H/2, H*0.9);
+  vgGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  vgGrad.addColorStop(1, 'rgba(0,0,0,0.65)');
 }
 
 function buildPuffs() {
@@ -846,10 +1171,17 @@ function dim(c, f) {
 function drawFrame() {
   ctx.clearRect(0, 0, W, H);
 
-  const bg = ctx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0, `rgba(${dim(palette.c1,0.08)},1)`);
-  bg.addColorStop(1, `rgba(${dim(palette.c2,0.08)},1)`);
-  ctx.fillStyle = bg;
+  /* sample the music to drive the reactive background */
+  let targetLevel = 0;
+  if (analyser && isPlaying && !muted && savedVol > 0 && !reduceMotion) {
+    analyser.getByteFrequencyData(freqData);
+    let sum = 0;
+    for (let i = 0; i < freqData.length; i++) sum += freqData[i];
+    targetLevel = (sum / freqData.length) / 255;
+  }
+  audioLevel += (targetLevel - audioLevel) * 0.12;
+
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0,0,W,H);
 
   ctx.globalCompositeOperation = 'screen';
@@ -857,12 +1189,15 @@ function drawFrame() {
   for (const p of puffs) {
     const pulse = Math.sin(t * 0.0006 + p.phase) * 3;
     const col   = p.side === 1 ? palette.c1 : palette.c2;
-    const grd   = ctx.createRadialGradient(p.cx,p.cy,0, p.cx,p.cy,p.r+pulse);
-    grd.addColorStop(0,   `rgba(${dim(col,p.bri)},${0.2+p.depth*0.35})`);
+    const react = 1 + audioLevel * 1.3 * (0.4 + p.depth);   // swell with the beat
+    const rr    = (p.r + pulse) * react;
+    const a0    = Math.min(0.85, (0.2 + p.depth * 0.35) * (1 + audioLevel * 0.8));
+    const grd   = ctx.createRadialGradient(p.cx,p.cy,0, p.cx,p.cy,rr);
+    grd.addColorStop(0,   `rgba(${dim(col, Math.min(0.6, p.bri*(1+audioLevel)))},${a0})`);
     grd.addColorStop(0.4, `rgba(${dim(col,p.bri*0.45)},0.18)`);
     grd.addColorStop(1,   `rgba(0,0,0,0)`);
     ctx.beginPath();
-    ctx.ellipse(p.cx, p.cy, p.r+pulse, (p.r+pulse)*0.52, 0, 0, Math.PI*2);
+    ctx.ellipse(p.cx, p.cy, rr, rr*0.52, 0, 0, Math.PI*2);
     ctx.fillStyle = grd;
     ctx.fill();
     p.cx += p.dx * (0.3 + p.depth * 1.2);
@@ -874,10 +1209,7 @@ function drawFrame() {
   }
 
   ctx.globalCompositeOperation = 'source-over';
-  const vg = ctx.createRadialGradient(W/2,H/2,H*0.28, W/2,H/2,H*0.9);
-  vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, 'rgba(0,0,0,0.65)');
-  ctx.fillStyle = vg;
+  ctx.fillStyle = vgGrad;
   ctx.fillRect(0,0,W,H);
 
   /* cursor trail — drawn on top of vignette */
@@ -894,13 +1226,25 @@ function drawFrame() {
   }
   ctx.globalCompositeOperation = 'source-over';
 
+  if (!reduceMotion) {
+    stage.style.transform = `translate3d(${mx*10}px,${my*10}px,0) rotateX(${my*-5}deg) rotateY(${mx*5}deg)`;
+  }
+
   t++;
-  requestAnimationFrame(drawFrame);
+  rafId = requestAnimationFrame(drawFrame);
 }
+
+function startLoop() { if (rafId == null) rafId = requestAnimationFrame(drawFrame); }
+function stopLoop()  { if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; } }
+
+/* pause the canvas while the tab is hidden (saves CPU/battery) */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopLoop(); else startLoop();
+});
 
 window.addEventListener('resize', resize);
 resize();
-drawFrame();
+startLoop();
 </script>
 </body>
 </html>
