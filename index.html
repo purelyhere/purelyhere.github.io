@@ -355,12 +355,6 @@ const FALLBACK_AVATAR = `https://cdn.discordapp.com/avatars/${DISCORD_USER_ID}/5
 const FRIENDS_TXT_URL = 'https://raw.githubusercontent.com/purelyhere/purelyhere.github.io/main/friends.txt';
 const MUSIC_API_URL   = 'https://api.github.com/repos/purelyhere/purelyhere.github.io/contents/music';
 const MUSIC_BASE_URL  = 'https://raw.githubusercontent.com/purelyhere/purelyhere.github.io/main/music/';
-
-const TITLE_LINES = [
-  'pure', 'purelyawake', 'how did you find me?',
-  'we all go at some point', 'music is amazing',
-  'lost somewhere', 'hi there!'
-];
 </script>
 
 <div class="stack">
@@ -851,30 +845,18 @@ if (FRIENDS_TXT_URL) {
   friendsBox.remove();
 }
 
-/* ── Dynamic title ── */
-let titleIndex = 0, charIndex = 0, deleting = false;
-
-async function titleLoop() {
-  const current = TITLE_LINES[titleIndex];
-  if (!deleting) {
-    charIndex++;
-    document.title = current.substring(0, charIndex) + '.';
-    if (charIndex >= current.length) { deleting = true; await wait(2200); }
-  } else {
-    charIndex--;
-    if (charIndex <= 0) {
-      document.title = '.';
-      deleting = false;
-      titleIndex = Math.floor(Math.random() * TITLE_LINES.length);
-    } else {
-      document.title = current.substring(0, charIndex) + '.';
-    }
-  }
-  setTimeout(titleLoop, deleting ? 55 : 110);
+/* ── Dynamic title (time-aware) ── */
+function titleForNow() {
+  const h = new Date().getHours();
+  if (h >= 5  && h < 11) return 'Early riser hm?';
+  if (h >= 11 && h < 15) return 'go eat, dont look at my page';
+  if (h >= 15 && h < 20) return 'i think the sun is going down';
+  return 'im probably asleep; lol';
 }
 
-function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-titleLoop();
+function updateTitle() { document.title = titleForNow(); }
+updateTitle();
+setInterval(updateTitle, 60000);   // re-check the clock every minute
 
 /* ── Mouse + gyro parallax + cursor trail ── */
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
